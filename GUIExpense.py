@@ -3,6 +3,48 @@ from tkinter import *
 from tkinter import ttk, messagebox
 from datetime import datetime
 import csv
+################# DATABASE #############################
+import sqlite3 
+
+# สร้าง database
+conn = sqlite3.connect('expense.db') # หรือ .sqlite3
+# สร้างตัวดำเนินการหรือ execution (อยากได้อะไรใช้ตัวนี้ได้เลย)
+c = conn.cursor() 
+
+# สร้าง table ด้วยภาษา sql
+'''['รหัสรายการ (transactionid)' TEXT,
+'วัน-เวลา(datetime)' TEXT,
+'รายการ(title)' TEXT,
+'ค่าใช้จ่าย(expense)' REAL (float),
+'จำนวน(quantity)' INTEGER,
+'รวม(total)' REAL]
+'''
+
+# ถ้าหลายบรรทัดเมื่อไรต้องใช้ """__""" ไม่สามารถใช้ "_" ได้
+# transaction is sqlite keyword 
+
+c.execute("""CREATE TABLE IF NOT EXISTS expenselist(
+				ID INTEGER PRIMARY KEY AUTOINCREMENT,
+				transactionid TEXT,
+				datetime TEXT,
+				title TEXT,
+				expense REAL,
+				quantity INTEGER,
+				total REAL
+			)""")
+
+def insert_expense(transactionid,datetime,title,expense,quantity,total):
+	ID = None # ID คือตัวที่ 7 ของ ?
+	with conn:
+		c.execute("""INSERT INTO expenselist VALUES (?,?,?,?,?,?,?)""",
+			(ID,transactionid,datetime,title,expense,quantity,total))
+		conn.commit() # การบันทึกข้อมูลลงในฐานข้อมูล ถ้าไม่รันตัวนี้จะไม่บันทึก
+		print('Insert Success!')
+######################################################
+
+
+
+
 # ttk is theme of Tk
 
 GUI = Tk()
@@ -63,8 +105,8 @@ f2 = Frame(Tab)
 Tab.pack(fill=BOTH)
 
 #---------IMAGE---------------
-img1 = PhotoImage(file='G:/Sing/Customer Logo/Calculator1.png').subsample(6)
-img2 = PhotoImage(file='G:/Sing/Customer Logo/Calculator.png').subsample(6)
+img1 = PhotoImage(file='D:/Study online course/Python for beginner (Uncle Engineer)/Logo/Calculator1.png').subsample(10)
+img2 = PhotoImage(file='D:/Study online course/Python for beginner (Uncle Engineer)/Logo/Calculator.png').subsample(10)
 # subsample คือย่อรูป
 # เวปหา icon  คือ IconArchive
 #--------End_Image----------
@@ -79,7 +121,7 @@ F1.pack()
 #F1.place(x=50,y=120)
 
 #---------Add_Background------------
-imgbg = PhotoImage(file='G:/Sing/Customer Logo/Shopping.png').subsample(10)
+imgbg = PhotoImage(file='D:/Study online course/Python for beginner (Uncle Engineer)/Logo/Shopping.png').subsample(6)
 imgbg1 = Label(F1,image = imgbg)
 imgbg1.pack()
 #---------End_Background------------
@@ -105,7 +147,7 @@ def Save(event=None):
 		return
 
 	try:
-		total = int(price) * int(quantity)
+		total = float(price) * float(quantity)
 		# .get() ดึงมาจาก v_expense = StringVar()
 		print('รายการ: {} \nราคา: {} บาท \nจำนวน: {} \nทั้งหมด {} บาท'.format(expense,price,quantity,total))
 		text = 'รายการ: {} ราคา: {}\n'.format(expense,price)
@@ -124,6 +166,10 @@ def Save(event=None):
 		dt = stamp.strftime('%Y-%m-%d %H:%M:%S')
 		transactionid = stamp.strftime('%Y%m%d%H%M%f')
 		dt = days[today] + '-' + dt
+		# print(type(transactionid))
+
+		insert_expense(transactionid,dt,expense,float(price),int(quantity),total)
+
 		with open('savedata.csv','a',encoding='utf-8',newline='') as f:
 			# with คือสั่งเปิดไฟล์แล้วปิดอัตโนมัติ
 			# 'a' การบันทึกเรื่อยๆ เพิ่มข้อมูลต่อจากข้อมูลเก่า
@@ -178,7 +224,7 @@ E3 = ttk.Entry(F1,textvariable=v_quantity,font=FONT1)
 E3.pack()
 #---------End----------
 
-saveimg = PhotoImage(file='G:/Sing/Customer Logo/save.png').subsample(6)
+saveimg = PhotoImage(file='D:/Study online course/Python for beginner (Uncle Engineer)/Logo/save.png').subsample(6)
 B2 = ttk.Button(F1,image = saveimg, text='Save',command=Save, compound = 'left')
 B2.pack(ipadx=50,ipady=20,pady=30)
 
@@ -331,7 +377,7 @@ def EditRecord():
 		update_table()
 		POPUP.destroy() #สั่งปิด popup ทันที
 
-	saveimg = PhotoImage(file='G:/Sing/Customer Logo/save.png').subsample(6)
+	saveimg = PhotoImage(file='D:/Study online course/Python for beginner (Uncle Engineer)/Logo//save.png').subsample(6)
 	B2 = ttk.Button(POPUP,image = saveimg, text='Save',command=Edit, compound = 'left')
 	B2.pack(ipadx=50,ipady=20,pady=30)
 
